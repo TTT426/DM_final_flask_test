@@ -21,4 +21,4 @@ Predict / Insert / Update
 
 # 後端
 route.py / app.py / model.py / run.py / requirements.txt 是最主要的後端程式
-route_test是曾子堤另外編輯的 是為了測試特定功能而架的後端 僅有特地功能
+route_test是曾另外編輯的 是為了測試特定功能而架的後端 僅有特地功能
