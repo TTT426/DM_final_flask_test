@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Flask, render_template, jsonify, request
 
 
+
 def register_routes(app,db):
     #主頁連結
     @app.route('/')
@@ -32,7 +33,7 @@ def register_routes(app,db):
     #球賽詳細資訊
     @app.route('/getgamedetail')
     def getgamedetail():
-        return render_template('games_details.html')
+        return render_template('games_deatails.html')
 
     #個別球員詳細資料
     @app.route('/player')

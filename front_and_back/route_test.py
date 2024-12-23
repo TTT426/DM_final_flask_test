@@ -10,7 +10,7 @@ app.secret_key = "your_secret_key"
 db_config = {
     'host': 'localhost',
     'user': 'hw3user',
-    'password': '********',
+    'password': 'hw3password',
     'database': 'final'
 }
 
