@@ -1,4 +1,7 @@
 # DM_final_flask_test
+## 更新：
+1. games_deatails.html -> game_details.html (檔名改了）
+2. score 的相關功能即和版面
 
 ### 已完成:
 Player / Winlist / Delete
