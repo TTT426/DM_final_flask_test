@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, flash, session, jsonify
+from datetime import datetime
 import mysql.connector
 
 
@@ -60,18 +61,22 @@ def winlist():
             cursor.close()
             conn.close()
 
-# Delete page - game ( for delete game_info and palte_appearance)
-@app.route('/game', methods=['POST'])
+# Delete page - game ( for delete game_info and plate_appearance)
+@app.route('/game', methods=['GET'])
 def game():
     try:
-        # 取得前端傳來的日期資料
-        data = request.json
-        year = int(data.get('year'))
-        month = int(data.get('month'))
-        day = int(data.get('day'))
+        # 取得前端傳來的查詢參數
+        date = request.args.get('date')
 
-        # 格式化日期
-        date = f"{year:04d}-{month:02d}-{day:02d}"
+        # 檢查參數是否完整
+        if not date:
+            return jsonify({"error": "缺少必要的查詢參數 'date'"}), 400
+
+        # 驗證日期格式
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "日期格式不正確，應為 YYYY-MM-DD"}), 400
 
         # 查詢資料庫
         conn = get_db_connection()
@@ -79,7 +84,7 @@ def game():
         cursor.execute("SELECT * FROM game_info WHERE game_date = %s", (date,))
         games = cursor.fetchall()
         conn.close()
-        
+
         # 如果沒有比賽資料
         if not games:
             return jsonify({"error": "該日期沒有比賽資料"}), 404
