@@ -52,6 +52,9 @@ p, h1, a {
 .winnerLink:hover + .winnerUnderLine {
     width: 70px;
 }
+.predictLink:hover + .predictUnderLine {
+    width: 70px;
+}
 
 .block a {
     text-decoration: none;

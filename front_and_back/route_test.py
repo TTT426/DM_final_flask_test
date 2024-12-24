@@ -110,8 +110,7 @@ def get_latest_games():
                 "2B": game["2B"],
                 "3B": game["3B"],
                 "audience": game["audience"],
-                "game_time": game["time"],
-                "mvp_player": game["mvp_player"]
+                "game_time": game["time"]
             })
 
         return jsonify(results)
@@ -200,6 +199,127 @@ def game_details():
 
     except mysql.connector.Error as e:
         return f"Database error: {str(e)}", 500
+    
+@app.route('/check-pitcher', methods=['GET'])
+def check_pitcher():
+    # 從 URL 參數中獲取投手名字
+    pitcher_name = request.args.get('name')
+
+    # 檢查是否有輸入投手名字
+    if not pitcher_name:
+        return jsonify({'exists': False, 'pitchers': []})
+
+    try:
+        # 連接資料庫並查詢匹配的投手
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM players WHERE name = %s"
+        cursor.execute(query, (pitcher_name,))
+        pitchers = cursor.fetchall()  # 查詢結果返回列表
+        cursor.close()
+        conn.close()
+
+        # 如果找到匹配的投手，返回 exists = True，否則返回 False
+        if pitchers:
+            return jsonify({'exists': True, 'pitchers': pitchers})
+        else:
+            return jsonify({'exists': False, 'pitchers': []})
+
+    except mysql.connector.Error as e:
+        # 捕捉資料庫錯誤並返回
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+@app.route('/check-batter', methods=['GET'])
+def check_batter():
+    batter_name = request.args.get('name')
+
+    # 檢查是否有輸入投手名字
+    if not batter_name:
+        return jsonify({'exists': False, 'batters': []})
+    
+    try:
+        # 連接資料庫並查詢匹配的投手
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM players WHERE name = %s"
+        cursor.execute(query, (batter_name,))
+        batters = cursor.fetchall()  # 查詢結果返回列表
+        cursor.close()
+        conn.close()
+    # 如果找到匹配的投手，返回 exists = True，否則返回 False
+        if batters:
+            return jsonify({'exists': True, 'batters': batters})
+        else:
+            return jsonify({'exists': False, 'batters': []})
+
+    except mysql.connector.Error as e:
+        # 捕捉資料庫錯誤並返回
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+@app.route('/show-outcome', methods=['GET'])
+def show_outcome():
+    pitcher_id = request.args.get('pitcher_id')
+    batter_id = request.args.get('batter_id')
+    year1 = request.args.get('year1')
+    year2 = request.args.get('year2')
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM match_results WHERE pitcher_id = %s and batter_id = %s and year between %s and %s"; 
+        cursor.execute(query, (pitcher_id, batter_id, year1, year2))
+        battles = cursor.fetchall()  # 查詢結果返回列表
+        cursor.close()
+        conn.close()
+        print(battles)
+        # 返回查詢結果
+        if battles:
+           return jsonify({'success': True, 'battles': battles})
+        else: 
+            return jsonify({'success': True, 'battles': []})
+
+    except mysql.connector.Error as e:
+        # 捕捉資料庫錯誤並返回
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+ 
+@app.route('/predict-outcome', methods=['GET'])
+def predict_outcome():
+    pitcher_id = request.args.get('pitcher_id')
+    batter_id = request.args.get('batter_id')
+    year1 = request.args.get('year1')
+    year2 = request.args.get('year2')
+
+    try:
+        # 先確認有沒有這場比賽 沒有的話直接回傳
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query1 = "SELECT * FROM match_results WHERE pitcher_id = %s and batter_id = %s and year between %s and %s"; 
+        cursor.execute(query1, (pitcher_id, batter_id, year1, year2))
+        the_result = cursor.fetchall()
+        if not the_result:
+            print("No")
+            # 如果没有比赛结果，返回错误消息
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '查無比賽結果 故無法預測'})
+        
+        ## 我預期你會傳給我的.json的格式
+        query = "SELECT * FROM output WHERE pitcher_id = %s and batter_id = %s"; 
+        cursor.execute(query, (pitcher_id, batter_id))
+        the_result = cursor.fetchall()  # 查詢結果返回列表
+        cursor.close()
+        conn.close()
+
+        
+        # 返回查詢結果
+        if the_result:
+           return jsonify({'success': True, 'the_result': the_result})
+        else: 
+            return jsonify({'success': True, 'the_result': []})
+
+    except mysql.connector.Error as e:
+        # 捕捉資料庫錯誤並返回
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
