@@ -9,7 +9,7 @@
    (3) @app.route('/show-outcome', methods=['GET']) -- 顯示投打對決的紀錄
        目前(3)的架構是 前端傳 : pitcher_id / batter_id / year1 / year2 (保證 year1 <= year2) 後端投打對決的所有資料
    (4) @app.route('/predict-outcome', methods=['GET']) -- 顯示出ops+
-      (註）(4) 的參考價值極低 因為我不會算 ops+ 我在實做時事直接當作刪了 直接把計算的結果顯示出來
+      (註）(4) 的參考價值極低 因為我不會算 ops+ 我在實做時假設已經算完了 所以我是直接把計算後的結果顯示出來
          目前(4)的架構是 前端傳 : pitcher_id / batter_id / year1 / year2 (保證 year1 <= year2)
          期望後端傳: 1. 球員上壘率 2. 聯盟上壘率 3. 球員長打率 4. 聯盟長打率 5. OPS+ 
 ### 已完成:
