@@ -118,19 +118,18 @@ export function addChooseUpdateGame(){
                             const game_3b = document.getElementById('game_3b');
                             const game_audience = document.getElementById('game_audience');
                             const game_times = document.getElementById('game_times');
-                            const game_mvp = document.getElementById('game_mvp');
+
                             
                             game_teamA.value = eachGame.home_team;
                             game_teamB.value = eachGame.away_team;
                             game_scoreA.value = eachGame.home_score;
                             game_scoreB.value = eachGame.away_score;
-                            game_hp.value = eachGame.HP;
-                            game_1b.value = eachGame['1B'];
-                            game_2b.value = eachGame['2B'];
-                            game_3b.value = eachGame['3B'];
+                            game_hp.value = eachGame.hp;
+                            game_1b.value = eachGame['first_base'];
+                            game_2b.value = eachGame['second_base'];
+                            game_3b.value = eachGame['third_base'];
                             game_audience.value = eachGame.audience;
                             game_times.value = eachGame.time;
-                            game_mvp.value = eachGame.mvp_player;
 
                             chooseG.id = eachGame.game_number;   //////////////////////////////////////
 

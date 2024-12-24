@@ -18,7 +18,7 @@ fetch(`/players/searchplayer?player_unique_id=${id}`)
 					</div>
 					<div class="valueColumn">
 						<p class="value">${data[0].player_name}</p>
-						<p class="value">none</p>
+						<p class="value">${data[0].number}</p>
 						<p class="value">${data[0].t_b}</p>
 						<p class="value">${data[0].draft_order}</p>
 						<p class="value">${data[0].position}</p>		
