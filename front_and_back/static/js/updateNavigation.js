@@ -53,7 +53,7 @@ changeToPlayer.addEventListener('click', (event) => {
             const playerOptions = document.querySelector('.playerOptions');
             choosePlayer.style.backgroundColor = 'rgba(128, 128, 128, 0.2)';
             choosePlayer.value = "2";
-            fetch('http://localhost:3000/players')
+            fetch('/player/getallplayer')
                 .then(res => res.json())
                 .then(data => {
                     const newData = data.map(player => ({
@@ -312,7 +312,7 @@ changeToWinner.addEventListener('click', async (event) => {
                 //const playerOptions = forEachPlayer.querySelector('.playerOptions');
                 forEachPlayer.style.backgroundColor = 'rgba(128, 128, 128, 0.2)';
                 forEachPlayer.value = "2";
-                fetch('http://localhost:3000/players')
+                fetch('/player/getallplayer')
                     .then(res => res.json())
                     .then(data => {
                         const newData = data.map(player => ({
