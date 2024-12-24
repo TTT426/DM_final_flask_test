@@ -2,8 +2,8 @@
 ## 更新：
 1. 我在搞事 目前在github上的game_detail.html有問題 不要更新 有好心人有正常的話在幫我丟上來  
 2. score.html 更新了（只動版面 功能不變）
-2. predict 『大致』完成 （css 跟 html 都有變更)
-3. route_test增加四個功能(皆for predict) (重點觀察 predict.js predict.html)
+3. predict 『大致』完成 （css 跟 html 都有變更)
+4. route_test增加四個功能(皆for predict) (重點觀察 predict.js predict.html)
    (1) @app.route('/check-pitcher', methods=['GET']) -- 用來確認使用者輸入的人是不是在資料庫裡的球員 （前端傳 名子） 
    (2) @app.route('/check-batter', methods=['GET']) -- 用來確認使用者輸入的人是不是在資料庫裡的球員 ( (1) 跟 (2) 可能可以合併成一個 但我做完才想到 ）（前端傳 名子） 
    (3) @app.route('/show-outcome', methods=['GET']) -- 顯示投打對決的紀錄
