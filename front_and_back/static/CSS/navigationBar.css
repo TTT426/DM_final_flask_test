@@ -7,7 +7,10 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 55px;
+    background-color: white;
+    z-index: 10;
+    border-bottom: 1px solid rgb(236, 236, 236);
 }
 .navigationButtonList{
     height: 100%;
@@ -71,8 +74,49 @@
     transition: background-color 0.15s;
 }
 .changeData:hover{
-    width: 52px;
-    height: 52px;
+    border-radius: 22px;
     background-color:rgba(128, 128, 128, 0.9);
     cursor: pointer;
+}
+
+#hoverNavigation{
+    
+    position:fixed;
+    top: 55px;
+    width: 100%;
+    height: 0px;
+    background-color: rgb(251, 251, 251);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: height 0.1s ease, padding-top 0.1s ease;
+}
+
+.hoverNavigationContent{
+    font-family: "Roboto", "Serial";
+    text-decoration: none;
+    color: black;
+    font-size: 25px;
+    font-weight: 300;
+    margin-bottom: 20px;
+}
+
+.hoverNavigationContent:hover{
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#navigationBarInsert, #navigationBarUpdate{
+    cursor: pointer;
+}
+.hoverNavigationBlock{
+    
+    margin-right: 200px;
+    width:100px;
+    height: 500px;
+    display:flex;
+    flex-direction: column;
+    align-items:self-start;
+    justify-content: flex-start;
 }

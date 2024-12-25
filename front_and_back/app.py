@@ -22,3 +22,4 @@ def create_app():
         print(f"資料庫連接失敗：{e}")
     migarte=Migrate(app,db)
     return app
+
