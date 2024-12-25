@@ -1,7 +1,7 @@
 from model import Player,Games,WinnerList,match_results,LeagueStats
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text,func
 
 
 
@@ -356,73 +356,83 @@ def register_routes(app,db):
             return jsonify({'error': f'Database error: {str(e)}'}), 500
     
     #計算給定投手和打者的ops+，若打者和投手無對戰紀錄。會特別通知前端
-    @app.route('/calculate_ops_plus', methods=['GET'])
-    def calculate_ops_plus():
+    @app.route('/predict-outcome', methods=['GET'])
+    def predict_outcome():
         try:
             # 獲取請求中的參數
-            player_id = request.args.get('player_id')  # 打者 ID
+            batter_id = request.args.get('batter_id')  # 打者 ID
             pitcher_id = request.args.get('pitcher_id')  # 投手 ID
-            start_year = int(request.args.get('start_year'))  # 開始年份
-            end_year = int(request.args.get('end_year'))  # 結束年份
+            start_year = request.args.get('year1')  # 開始年份
+            end_year = request.args.get('year2')  # 結束年份
 
-            # 查詢選定年份範圍內的打者和投手對戰紀錄
-            player_stats = match_results.query.filter_by(player_unique_id=player_id).filter(
-                match_results.year >= start_year, match_results.year <= end_year).all()
-            
-            pitcher_stats = match_results.query.filter_by(player_unique_id=pitcher_id).filter(
-                match_results.year >= start_year, match_results.year <= end_year).all()
+            # 驗證參數是否齊全
+            if not (batter_id and pitcher_id and start_year and end_year):
+                return jsonify({"success": False, "message": "缺少必要參數"}), 400
 
-            # 判斷是否有對戰紀錄
-            if not player_stats or not pitcher_stats:
-                return jsonify({"error": "No game records found for the selected player and pitcher in the given years."}), 404
+            # 查詢對戰紀錄
+            match_data = db.session.query(
+                func.sum(match_results.hits).label('total_hits'),
+                func.sum(match_results.at_bats).label('total_at_bats'),
+                func.sum(match_results.walks).label('total_walks'),
+                func.sum(match_results.total_bases).label('total_bases'),
+            ).filter(
+                match_results.batter_id == batter_id,
+                match_results.pitcher_id == pitcher_id,
+                match_results.year >= start_year,
+                match_results.year <= end_year
+            ).first()
 
-            # 計算打者的 OBP 和 SLG
-            total_hits = sum(stat.hits for stat in player_stats)
-            total_walks = sum(stat.bb for stat in player_stats)
-            total_hbp = sum(stat.hbp for stat in player_stats)
-            total_ab = sum(stat.ab for stat in player_stats)
-            total_sf = sum(stat.sf for stat in player_stats)
-            
-            # 計算 OBP (On-base Percentage)
-            obp = (total_hits + total_walks + total_hbp) / (total_ab + total_walks + total_hbp + total_sf)
-            
-            singles = sum(stat.singles for stat in player_stats)  # 單安打
-            doubles = sum(stat.doubles for stat in player_stats)  # 二壘安打
-            triples = sum(stat.triples for stat in player_stats)  # 三壘安打
-            hr = sum(stat.hr for stat in player_stats)  # 全壘打
-            
-            # 計算 SLG (Slugging Percentage)
-            slg = (singles + 2 * doubles + 3 * triples + 4 * hr) / total_ab
+            # 如果無對戰紀錄
+            if not match_data or not match_data.total_at_bats:
+                return jsonify({"success": False, "message": "無對戰紀錄"}), 404
 
-            # 查詢聯盟的平均 OBP 和 SLG
-            league_obp = LeagueStats.query.filter(
-                LeagueStats.year >= start_year, LeagueStats.year <= end_year).all()
-            league_slg = LeagueStats.query.filter(
-                LeagueStats.year >= start_year, LeagueStats.year <= end_year).all()
-            
-            if not league_obp or not league_slg:
-                return jsonify({"error": "No league data found for the selected years."}), 404
+            # 計算球員 OBP 和 SLG
+            hits = match_data.total_hits or 0
+            at_bats = match_data.total_at_bats or 0
+            walks = match_data.total_walks or 0
+            total_bases = match_data.total_bases or 0
 
-            # 計算聯盟的平均 OBP 和 SLG
-            league_obp_avg = sum(stat.obp for stat in league_obp) / len(league_obp)
-            league_slg_avg = sum(stat.slg for stat in league_slg) / len(league_slg)
+            obp = (hits + walks) / (
+                at_bats + walks ) if at_bats > 0 else 0
+            slg = total_bases / at_bats if at_bats > 0 else 0
+
+            # 查詢聯盟數據
+            league_data = db.session.query(
+                func.sum(LeagueStats.league_plate_appearances).label('total_pa'),
+                func.sum(LeagueStats.league_at_bats).label('total_ab'),
+                func.sum(LeagueStats.league_total_bases).label('total_tb'),
+                func.sum(LeagueStats.league_on_base_percentage * LeagueStats.league_plate_appearances).label('weighted_obp'),
+                func.sum(LeagueStats.league_slugging_percentage * LeagueStats.league_at_bats).label('weighted_slg'),
+            ).filter(
+                LeagueStats.year >= start_year,
+                LeagueStats.year <= end_year
+            ).first()
+
+            # 驗證聯盟數據
+            if not league_data or not league_data.total_pa or not league_data.total_ab:
+                return jsonify({"success": False, "message": "無聯盟數據"}), 404
+
+            # 加權平均計算
+            league_obp = league_data.weighted_obp / league_data.total_pa if league_data.total_pa > 0 else 0
+            league_slg = league_data.weighted_slg / league_data.total_ab if league_data.total_ab > 0 else 0
 
             # 計算 OPS+
-            ops_plus = 100 * ((obp / league_obp_avg) + (slg / league_slg_avg) - 1)
+            ops_plus = 100 * ((obp / league_obp) + (slg / league_slg) - 1)
 
-            # 回傳結果
-            result = {
-                "player_id": player_id,
-                "pitcher_id": pitcher_id,
-                "start_year": start_year,
-                "end_year": end_year,
-                "OPS+": ops_plus
-            }
-
-            return jsonify(result)
+            # 返回計算結果
+            return jsonify({
+                "success": True,
+                "the_result": [{
+                    "player_on_base_percentage": f"{obp:.3f}",
+                    "league_on_base_percentage": f"{league_obp:.3f}",
+                    "player_slugging_percentage": f"{slg:.3f}",
+                    "league_slugging_percentage": f"{league_slg:.3f}",
+                    "ops_plus": f"{ops_plus:.2f}"
+                }]
+            })
 
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"success": False, "message": f"後端發生錯誤: {str(e)}"}), 500
 
     #新增新的資料進入player 
     @app.route('/add_player', methods=['POST'])

@@ -48,9 +48,9 @@ class WinnerList(db.Model):
 class match_results(db.Model):
     __tablename__ = 'match_results'
     
-    year = db.Column(db.Integer, nullable=False)                      # 年份
-    pitcher_id = db.Column(db.Integer, nullable=False)                # 投手
-    batter_id = db.Column(db.Integer, nullable=False)                 # 打者
+    year = db.Column(db.Integer, autoincrement=True, nullable=False)                      # 年份
+    pitcher_id = db.Column(db.Integer, autoincrement=True, nullable=False)                # 投手
+    batter_id = db.Column(db.Integer,autoincrement=True, nullable=False)                 # 打者
     plate_appearances = db.Column(db.Integer)                          # 打席
     at_bats = db.Column(db.Integer)                                    # 打數
     runs_batted_in = db.Column(db.Integer)                             # 打點
@@ -72,9 +72,9 @@ class match_results(db.Model):
     )
 
 class LeagueStats(db.Model):
-    __tablename__ = 'league_stats'
+    __tablename__ = 'league_status'
     
-    year = db.Column(db.Integer, nullable=False, primary_key=True)     # 年份
+    year = db.Column(db.Integer,autoincrement=True, nullable=False, primary_key=True)     # 年份
     league_plate_appearances = db.Column(db.Integer)                    # 聯盟打席數
     league_at_bats = db.Column(db.Integer)                              # 聯盟打數
     league_total_bases = db.Column(db.Integer)                          # 聯盟壘打數
