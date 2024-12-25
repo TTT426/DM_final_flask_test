@@ -28,6 +28,7 @@ class Games(db.Model):
     third_base = db.Column(db.String(50), nullable=True)
     audience = db.Column(db.Integer, nullable=True)
     game_time = db.Column(db.Integer, nullable=True)
+    game_status =db.Column(db.Integer, nullable=True)
 
 
 class WinnerList(db.Model):
@@ -48,8 +49,8 @@ class match_results(db.Model):
     __tablename__ = 'match_results'
     
     year = db.Column(db.Integer, nullable=False)                      # 年份
-    pitcher = db.Column(db.String(100), nullable=False)                # 投手
-    batter = db.Column(db.String(100), nullable=False)                 # 打者
+    pitcher_id = db.Column(db.Integer, nullable=False)                # 投手
+    batter_id = db.Column(db.Integer, nullable=False)                 # 打者
     plate_appearances = db.Column(db.Integer)                          # 打席
     at_bats = db.Column(db.Integer)                                    # 打數
     runs_batted_in = db.Column(db.Integer)                             # 打點
@@ -67,7 +68,7 @@ class match_results(db.Model):
 
     # Composite Primary Key (year, pitcher, batter)
     __table_args__ = (
-        db.PrimaryKeyConstraint('year', 'pitcher', 'batter'),
+        db.PrimaryKeyConstraint('year', 'pitcher_id', 'batter_id'),
     )
 
 class LeagueStats(db.Model):

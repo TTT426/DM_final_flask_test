@@ -138,12 +138,11 @@ function displayGames(games) {
             <p><strong>比賽日期:</strong> ${formattedDate}</p>
             <p><strong>主場隊伍:</strong> ${game.home_team} (${game.home_score})</p>
             <p><strong>客場隊伍:</strong> ${game.away_team} (${game.away_score})</p>
-            <p><strong>MVP:</strong> ${game.mvp_player || "無"}</p>
             <p><strong>game_number:</strong> ${game.game_number}</p>
-            <p><strong>HP:</strong> ${game.HP || "N/A"}</p>
-            <p><strong>1B:</strong> ${game["1B"] || "N/A"}</p>
-            <p><strong>2B:</strong> ${game["2B"] || "N/A"}</p>
-            <p><strong>3B:</strong> ${game["3B"] || "N/A"}</p>
+            <p><strong>HP:</strong> ${game.hp || "N/A"}</p>
+            <p><strong>1B:</strong> ${game["first_base"] || "N/A"}</p>
+            <p><strong>2B:</strong> ${game["second_base"] || "N/A"}</p>
+            <p><strong>3B:</strong> ${game["third_base"] || "N/A"}</p>
             <p><strong>觀眾人數:</strong> ${game.audience || "N/A"}</p>
             <p><strong>比賽時間:</strong> ${game.game_time || "N/A"}</p>
             <p><strong>比賽狀態:</strong> ${game.game_status || "N/A"}</p>

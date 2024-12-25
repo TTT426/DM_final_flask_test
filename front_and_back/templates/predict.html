@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Predict game outcomes and view detailed statistics.">
   <link rel="stylesheet" href="../static/CSS/predict.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,
+						400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" 
+						rel="stylesheet">
   <title>Predict</title>
 </head>
 
@@ -32,38 +37,81 @@
       </div>
     </div>
     <div class="block">
-        <a class="changeData" href="{{ url_for('insert') }}">Insert</a>
+        <a class="changeData" href="{{ url_for('insertplayer') }}">Insert</a>
         <div class="insertLine"></div>
       </div>
   </div>
 
+<div style="display: flex">
   <div class="user-input">
-    <h3>Enter Your Details</h3>
-    <form id="predictForm" action="/submit" method="POST">
+    <h3>投打對決預測</h3>
+    <p>請注意: 輸入名子後請點選find, 會列出全部符合條件的球員</p>
+    <p>請點選你想要選擇的球員</p>
+    <p>跳出"您選擇了..."的字串才算成功選取</p>
+
+    <form>
+      <br><br>
       <label for="pitcherName">Pitcher Name:</label>
-      <input type="text" id="pitcherName" name="pitcherName" placeholder="Enter your pitcher name" required>
-      <br>
-      <label for="hitterName">Hitter Name:</label>
-      <input type="text" id="hitterName" name="hitterName" placeholder="Enter your hitter name" required>
-      <br>
-      <p>OPS+:100*[(球員上壘率/聯盟上壘率)+(球員長打率/聯盟長打率)-1](衡量打者進攻能力)</p>
-      <p>ERA+:(League ERA / ERA) * Park Factor</p>
-      <p>ERA: 自責分*9 / 投球局數 </p>
-      <p>對決指數 = (打者 OPS+ / 100) * (100 / 投手 ERA+) * 場地因子</p>
-      
-      <div id="result">
-        <h3>Result:</h3>
-        <p id="duelIndex">Duel Index: </p>
-        <p id="batterOpsPlus">Batter OPS+: </p>
-        <p id="pitcherEraPlus">Pitcher ERA+: </p>
-        <p id="conclusion"></p>
-      </div>
-      
-      <button type="submit">Predict Outcome</button>
+      <input type="text" id="pitcher-name" name="pitcher-name" placeholder="Enter Pitcher name" required>
+      <button type="button" onclick="checkpitch()">find</button>
+      <div id="selected-pitcher" style="display: none; margin-top: 10px; font-size: 18px; color: #12100e;"></div>
+      <br><br>
+
+      <label for="batterName">Batter Name:</label>
+      <input type="text" id="batter-name" name="batter-name" placeholder="Enter Batter name" required>
+      <button type="button" onclick="checkbatter()">find</button>
+      <div id="selected-batter" style="display: none; margin-top: 10px; font-size: 18px; color: #12100e;"></div>
+      <br><br>
+
+      <label class="inline-container" for="year-range-1">選擇年份區間:</label>
+      <select class="inline-container" id="year-range-1" name="year-range-1"></select>
+      <p class="inline-container">~</p>
+      <select class="inline-container" id="year-range-2" name="year-range-2"></select>
+      <p>使用公式:OPS+:100*[(球員上壘率/聯盟上壘率)+(球員長打率/聯盟長打率)-1]</p>
+      <button id="predict-button" type="button" onclick="showOutcome()">顯示對戰紀錄</button>
+      <button id="predict-button" type="button" onclick="predictOutcome()">Predict Outcome</button>
     </form>
-    <p id="displayName"></p>
+
+    <div id="outcome" style="margin-top: 20px;"></div>
   </div>
-  <script src = ../static/js/predict.js>
+
+  <!-- 投手選項顯示區域 -->
+  <div id="pitcher-options" style="width: 50%; padding: 20px; border-left: 1px solid #ccc; overflow-y: auto;"></div>
+  <div id="batter-options" style="width: 50%; padding: 20px; border-left: 1px solid #ccc; overflow-y: auto;"></div>
+
+  <div id="prediction-result" style="display: none; margin-top: 20px;">
+    <h3>Prediction Result</h3>
+    <table id="result-table" border="1" style="width: 100%; text-align: center; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Player OBP</th>
+                <th>League OBP</th>
+                <th>Player SLG</th>
+                <th>League SLG</th>
+                <th>OPS+</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+  </div>
+</div>
+
+  <script src="../static/js/predict.js"></script>
+  <script> // 產生年份選擇區間器
+    function populateYearRange(selectId, startYear, endYear) {
+      const select = document.getElementById(selectId);
+      for (let year = startYear; year <= endYear; year++) {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          select.appendChild(option);
+      }
+    }
+
+    // 對兩個選擇框調用函數
+    populateYearRange('year-range-1', 1990, 2024);
+    populateYearRange('year-range-2', 1990, 2024);
   </script>
   
 </body>

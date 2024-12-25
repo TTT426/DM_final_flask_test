@@ -26,11 +26,16 @@ def register_routes(app,db):
     def winnerlist():
         return render_template('winnerList.html')
 
-    #插入頁面
-    @app.route('/insert')
-    def insert():
-        return render_template('insert.html')
+    #插入球員頁面
+    @app.route('/insertplayer')
+    def insertplayer():
+        return render_template('insertPlayer.html')
 
+    #插入比賽頁面
+    @app.route('/insertgame')
+    def insertgame():
+        return render_template('insertGame.html')
+    
     #球賽詳細資訊
     @app.route('/getgamedetail')
     def getgamedetail():
@@ -46,11 +51,16 @@ def register_routes(app,db):
     def predict():
         return render_template('predict.html')
     
-    #更新資料庫
-    @app.route('/update')
-    def update():
-        return render_template('Update.html')
+    #更新球員資料庫
+    @app.route('/updateplayer')
+    def updateplayer():
+        return render_template('updatePlayer.html')
 
+    #更新年度獎項資料庫
+    @app.route('/updatewinnerlist')
+    def updatewinnerlist():
+        return render_template('updateWinnerList.html')
+    
     #刪除資料庫
     @app.route('/delete')
     def delete():
@@ -188,6 +198,7 @@ def register_routes(app,db):
                     "third_base": game.third_base,
                     "audience": game.audience,
                     "game_time": game.game_time,
+                    "game_status": game.game_status
                 })
 
             return jsonify(results)
@@ -223,7 +234,8 @@ def register_routes(app,db):
                     "second_base": game.second_base,
                     "third_base": game.third_base,
                     "audience": game.audience,
-                    "game_time": game.game_time
+                    "game_time": game.game_time,
+                    "game_status": game.game_status
                 })
 
             return jsonify(results)
@@ -292,6 +304,57 @@ def register_routes(app,db):
             db.session.rollback()  # 發生異常時回滾變更
             return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+    # 查詢投手對打者的比賽結果
+    @app.route('/show-outcome', methods=['GET'])
+    def show_outcome():
+        pitcher_id = request.args.get('pitcher_id')
+        batter_id = request.args.get('batter_id')
+        year1 = request.args.get('year1')
+        year2 = request.args.get('year2')
+
+        # 檢查必要的參數是否存在
+        if not pitcher_id or not batter_id or not year1 or not year2:
+            return jsonify({'error': 'Missing required parameters'}), 400
+
+        try:
+            # 查詢符合條件的比賽結果
+            battles = match_results.query.filter(
+                match_results.pitcher_id == pitcher_id,
+                match_results.batter_id == batter_id,
+                match_results.year.between(year1, year2)
+            ).all()
+
+            # 構建回應資料
+            if battles:
+                battles_data = [
+                    {
+                        'year': battle.year,
+                        'pitcher_id': battle.pitcher_id,
+                        'batter_id': battle.batter_id,
+                        'plate_appearances': battle.plate_appearances,
+                        'at_bats': battle.at_bats,
+                        'runs_batted_in': battle.runs_batted_in,
+                        'hits': battle.hits,
+                        'doubles': battle.doubles,
+                        'triples': battle.triples,
+                        'home_runs': battle.home_runs,
+                        'total_bases': battle.total_bases,
+                        'batting_average': battle.batting_average,
+                        'walks': battle.walks,
+                        'intentional_walks': battle.intentional_walks,
+                        'hit_by_pitch': battle.hit_by_pitch,
+                        'strikeouts': battle.strikeouts,
+                        'on_base_percentage': battle.on_base_percentage
+                    }
+                    for battle in battles
+                ]
+                return jsonify({'success': True, 'battles': battles_data})
+
+            return jsonify({'success': True, 'battles': []})
+
+        except Exception as e:
+            return jsonify({'error': f'Database error: {str(e)}'}), 500
+    
     #計算給定投手和打者的ops+，若打者和投手無對戰紀錄。會特別通知前端
     @app.route('/calculate_ops_plus', methods=['GET'])
     def calculate_ops_plus():
@@ -394,30 +457,34 @@ def register_routes(app,db):
             db.session.rollback()  # 發生錯誤時回滾
             return jsonify({"message": f"Error: {str(e)}"}), 500
         
-    #插入新的比賽資料
     @app.route('/insert_game', methods=['POST'])
     def insert_game():
-        data = request.get_json()  # 從前端接收 JSON 數據
-        
-        # 從接收到的資料中提取各個欄位
-        game_date = data.get('game_date')
-        home_team = data.get('home_team')
-        away_team = data.get('away_team')
-        home_score = data.get('home_score')
-        away_score = data.get('away_score')
-        hp = data.get('hp')
-        first_base = data.get('first_base')
-        second_base = data.get('second_base')
-        third_base = data.get('third_base')
-        audience = data.get('audience')
-        game_time = data.get('game_time')
+        # 確保請求內容為 JSON 格式
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 415
 
-        # 檢查必要欄位是否有提供
-        if not game_date or not home_team or not away_team:
-            return jsonify({"error": "Missing required fields"}), 400
-        
         try:
-            # 創建新的遊戲資料
+            # 獲取請求數據
+            data = request.get_json()
+
+            # 提取字段
+            game_date = data.get('game_date')
+            home_team = data.get('home_team')
+            away_team = data.get('away_team')
+            home_score = data.get('home_score')
+            away_score = data.get('away_score')
+            hp = data.get('hp')
+            first_base = data.get('first_base')
+            second_base = data.get('second_base')
+            third_base = data.get('third_base')
+            audience = data.get('audience')
+            game_time = data.get('game_time')
+
+            # 驗證必要字段是否存在
+            if not game_date:
+                return jsonify({"error": "Missing required fields"}), 400
+
+            # 創建新遊戲記錄
             new_game = Games(
                 game_date=game_date,
                 home_team=home_team,
@@ -432,16 +499,15 @@ def register_routes(app,db):
                 game_time=game_time
             )
 
-            # 將新資料保存到資料庫
+            # 保存到數據庫
             db.session.add(new_game)
             db.session.commit()
 
-            # 返回成功消息
             return jsonify({"message": "Game inserted successfully"}), 201
 
         except Exception as e:
-            db.session.rollback()  # 發生錯誤時回滾
-            return jsonify({"error": str(e)}), 500
+            db.session.rollback()  # 回滾數據庫
+            return jsonify({"error": f"An error occurred: {str(e)}"}), 500
         
     @app.route('/game_details', methods=['GET'])
     def game_details():
@@ -469,3 +535,144 @@ def register_routes(app,db):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    # 查詢投手端點
+    @app.route('/check-player', methods=['GET'])
+    def check_player():
+        player_name = request.args.get('name')  # 獲取前端傳遞的投手名字
+
+        # 檢查是否提供了名字
+        if not player_name:
+            return jsonify({"error": "Player name is required"}), 400
+
+        try:
+            # 查詢符合名字的投手
+            players = Player.query.filter(Player.player_name.like(f"%{player_name}%")).all()
+
+            if not players:
+                return jsonify({"exists": False, "players": []}), 200
+
+            # 將查詢結果轉為字典
+            player_list  =[]
+
+            for player in players:
+                 player_list.append({
+                    "player_unique_id": player.player_unique_id,
+                    "player_name": player.player_name,
+                    "t_b": player.t_b,
+                    "number":player.number,
+                    "team":"樂天桃園",
+                    "height": player.height,
+                    "weight": player.weight,
+                    "born": player.born,
+                    "debut": player.debut,
+                    "nationality": player.nationality,
+                    "position": player.position,
+                })
+
+            return jsonify({"exists": True, "players": player_list}), 200
+
+        except Exception as e:
+             return jsonify({'exists': False, 'players': []}),500
+        
+    #更新player資訊
+    @app.route('/players/<int:id>', methods=['PATCH'])
+    def update_player(id):
+        # 解析請求數據
+        data = request.get_json()
+
+        # 確保請求包含需要更新的數據
+        required_fields = [
+            "player_name", "number", "t_b", "height", "weight",
+            "born", "debut", "nationality", "draft_order", "position"
+        ]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
+        try:
+            # 根據 ID 查找球員
+            player = Player.query.get(id)
+            if not player:
+                return jsonify({"error": "Player not found"}), 404
+
+            # 更新球員信息
+            player.player_name = data["player_name"]
+            player.number = data["number"]
+            player.t_b = data["t_b"]
+            player.height = data["height"]
+            player.weight = data["weight"]
+            player.born = data["born"]
+            player.debut = data["debut"]
+            player.nationality = data["nationality"]
+            player.draft_order = data["draft_order"]
+            player.position = data["position"]
+
+            # 保存更改到數據庫
+            db.session.commit()
+
+            return jsonify({"message": "Player updated successfully"}), 200
+
+        except Exception as e:
+            # 捕獲並處理異常
+            db.session.rollback()
+            return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+        
+    # 更新得獎者列表資訊
+    @app.route('/winnerlist/<int:year>', methods=['PATCH'])
+    def update_winnerlist(year):
+
+        data = request.get_json()
+        # 根據年份查找相應的獲獎資料
+        winner_data = WinnerList.query.filter_by(years=year).first()
+        if not winner_data:
+            return jsonify({"error": "Year not found"}), 404
+        try:
+            # 更新資料
+            winner_data.most_hits_player_id = data.get('most_hits_player_id')
+            winner_data.highest_batting_average_player_id = data.get('highest_batting_average_player_id')
+            winner_data.most_RBI_player_id = data.get('most_RBI_player_id')
+            winner_data.most_stolen_bases_player_id = data.get('most_stolen_bases_player_id')
+            winner_data.homerun_leader_player_id = data.get('homerun_leader_player_id')
+            winner_data.most_wins_player_id = data.get('most_wins_player_id')
+            winner_data.strikeout_leader_player_id = data.get('strikeout_leader_player_id')
+            winner_data.lowest_ERA_player_id = data.get('lowest_ERA_player_id')
+            winner_data.most_saves_player_id = data.get('most_saves_player_id')
+            winner_data.most_holds_player_id = data.get('most_holds_player_id')
+            
+            # 提交變更
+            db.session.commit()
+            return jsonify({"message": "Winner list updated successfully"}), 200
+
+        except Exception as e:
+            # 捕獲異常並回滾事務
+            db.session.rollback()
+            return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    # 搜尋球員
+    @app.route('/search_player_bypartname', methods=['GET'])
+    def search_players():
+        player_name = request.args.get('player_name', '').strip()
+
+        try:
+            # 如果提供了 player_name，進行模糊搜尋
+            if player_name:
+                players = Player.query.filter(Player.player_name.ilike(f"%{player_name}%")).all()
+            else:
+                return jsonify({"error": "Missing 'player_name' parameter"}), 400
+
+            # 將搜尋結果格式化為 JSON
+                        # 將查詢結果轉為字典
+            player_list  =[]
+            a=34
+            for player in players:
+                 if(a<=34 and a>=0):
+                    a=a-1
+                    player_list.append({
+                        "player_unique_id": player.player_unique_id,
+                        "player_name": player.player_name,
+                    })
+
+            return jsonify(player_list), 200
+
+        except Exception as e:
+            return jsonify({"error": f"An error occurred: {str(e)}"}), 500
