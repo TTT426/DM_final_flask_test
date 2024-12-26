@@ -1,0 +1,51 @@
+CREATE TABLE batting_award(
+    Year INT,
+    most_hits_player_id INT,
+    highest_batting_average_player_id INT,
+    most_RBI_player_id INT,
+    most_stolen_bases_player_id INT,
+    homerun_leader_player_id INT
+);
+
+
+CREATE TABLE pitching_award(
+    Year INT,
+    most_hits_player_id INT,
+    highest_batting_average_player_id INT,
+    most_RBI_player_id INT,
+    most_stolen_bases_player_id INT,
+    homerun_leader_player_id INT
+);
+
+INSERT DATA INFILE ""
+
+
+
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/batting_award.csv'
+INTO TABLE batting_award
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/pitching_award.csv'
+INTO TABLE pitching_award
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+CREATE TABLE winner_list AS
+SELECT 
+    batting_award.*, 
+    pitching_award.most_hits_player_id,
+    pitching_award.highest_batting_average_player_id,
+    pitching_award.most_RBI_player_id,
+    pitching_award.most_stolen_bases_player_id,
+    pitching_award.homerun_leader_player_id
+FROM 
+    batting_award
+INNER JOIN 
+    pitching_award 
+ON 
+    batting_award.Year = pitching_award.Year;

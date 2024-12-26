@@ -104,7 +104,7 @@ submitButton.addEventListener('click', (event) => {
         },
         'body': JSON.stringify(transferData)
     }).then(response => response.json())
-        .then(data => console.log("Success:", data))
-        .catch(error => console.error("Error:", error));
+        .then(data => alert(`Success`)) 
+        .catch(error => console.log(`error`));
 });
 

@@ -123,5 +123,6 @@ export function playerSearchUpdatePlayer(id, text, practiceInput)
         document.getElementById('player_nationality').value = data[0].nationality;
         document.getElementById('player_draft_order').value = data[0].draft_order;
         document.getElementById('player_position').value = data[0].position;
+        document.getElementById('player_team').value = data[0].team;
     }).catch(error => {console.log("error", error)});
 }

@@ -10,6 +10,7 @@ submitButton.addEventListener('click', (event) => {
     const nationality = document.getElementById('player_nationality').value;
     const draftOrder = document.getElementById('player_draft_order').value;
     const position = document.getElementById('player_position').value;
+    const team = document.getElementById('player_position').value;
 
     
     let isValid = true;
@@ -21,6 +22,7 @@ submitButton.addEventListener('click', (event) => {
     const debutErrorMessage = document.getElementById('debut-error-message');
     const nationalityErrorMessage = document.getElementById('nationality-error-message');
     const positionErrorMessage = document.getElementById('position-error-message');
+    const teamErrorMessage = document.getElementById('team-error-message');
     console.log((number.length == 0)? 0 : Number(number));
 
 
@@ -128,6 +130,19 @@ submitButton.addEventListener('click', (event) => {
         //document.getElementById('player_position_tag').style.color = 'black';
         document.getElementById('player_position_block').style.marginBottom = '25px';
     }
+
+    teamErrorMessage.style.display = `none`;
+    if (team.length === 0) {
+        teamErrorMessage.style.display = 'block';
+        isValid = false;
+        document.getElementById('player_team').style.border = '1px solid red';
+        //document.getElementById('player_position_tag').style.color = 'red';
+        document.getElementById('player_team_block').style.marginBottom = '33px';
+    } else {
+        document.getElementById('player_team').style.border = '1px solid black';
+        //document.getElementById('player_position_tag').style.color = 'black';
+        document.getElementById('player_team_block').style.marginBottom = '25px';
+    }
     
 
 
@@ -143,7 +158,8 @@ submitButton.addEventListener('click', (event) => {
             "debut": debut,
             "nationality": nationality,
             "draft_order": draftOrder,
-            "position": position
+            "position": position,
+            "team": team
         }
 
         console.log(transferData);
@@ -155,8 +171,8 @@ submitButton.addEventListener('click', (event) => {
             },
             'body': JSON.stringify(transferData)
         }).then(response => response.json())
-          .then(data => console.log("Success:", data))
-          .catch(error => console.error("Error:", error));
-    
+        .then(data => alert(`Success`)) 
+        .catch(error => console.log(`error`));
+        
     }
 });
