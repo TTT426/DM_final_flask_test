@@ -15,6 +15,10 @@ def register_routes(app,db):
     @app.route('/allPlayersWithoutTeam')
     def all_players():
         return render_template('allPlayersWithoutTeam.html')
+    
+    @app.route('/allPlayers')
+    def allPlayers():
+        return render_template('allPlayers.html')
 
     #球賽紀錄
     @app.route('/score')
