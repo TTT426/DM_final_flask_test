@@ -14,7 +14,7 @@
 }
 .navigationButtonList{
     height: 100%;
-    width:300px;
+    width:370px;
     display:flex;
     flex-direction: row;
 }
@@ -38,7 +38,13 @@
     background-color:black;
     transition: width 0.2s ease;
 }
+
+
+
 .playerLink:hover + .playerUnderLine{
+    width: 70px;
+}
+.predictLink:hover + .predictUnderLine{
     width: 70px;
 }
 .scoreLink:hover + .scoreUnderLine{
@@ -59,6 +65,8 @@
 }
 
 .changeData{
+    text-decoration: none;
+    color: white;
     margin-top: 5px;
     margin-right: 30px;
     width:50px;

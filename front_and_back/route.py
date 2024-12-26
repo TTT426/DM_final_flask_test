@@ -147,6 +147,7 @@ def register_routes(app,db):
     #回傳所有球員的id和名字
     @app.route('/player/getallplayer', methods=['GET'])
     def get_all_players():
+        print('a')
         try:
             players = Player.query.all()
             if not players:

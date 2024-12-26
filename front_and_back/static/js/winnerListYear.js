@@ -4,6 +4,7 @@ const chooseRight = document.getElementById('chooseRight');
 let posX = 0;
 const translateVal = 800;
 chooseLeft.addEventListener('click', () => {
+    console.log('left');
     if (posX < 0) 
     {
         posX += translateVal;
@@ -11,6 +12,7 @@ chooseLeft.addEventListener('click', () => {
     }
 });
 chooseRight.addEventListener('click', () => {
+    console.log('right');
     if (posX > -2400)
     {
         posX -= translateVal;
